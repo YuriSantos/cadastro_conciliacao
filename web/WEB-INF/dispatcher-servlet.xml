@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd" xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p" xmlns="http://www.springframework.org/schema/beans">
+    <!-- Scans the classpath for annotated components that will be auto-registered as Spring beans -->
+    <!-- procura por componentes para que estes possam ser manipulados pelo String IoC No nosso caso, os Daos, Services e Controllers -->
+    <context:component-scan base-package="br.jus.jfpb.cadastro.dao,br.jus.jfpb.cadastro.service,br.jus.jfpb.cadastro.controller"/>
+    <!-- Permite que a injeção de dependência seja configurada usando anotações -->
+    <context:annotation-config/>
+    <!-- Permite que os controllers do Spring MVC sejam configurados usando anotações -->
+    <mvc:annotation-driven enableMatrixVariables="true"/>
+    <!-- Permite que arquivos como imagens, css, javascript, etc não sejam bloqueados pelo DispatcherServlet -->
+    <mvc:default-servlet-handler/>
+    <!-- Injeção do resolver, que permite os controllers repassarem requisições para jsps -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property value="/WEB-INF/views/" name="prefix"/>
+        <property value=".jsp" name="suffix"/>
+    </bean>
+    <!-- Injeção da classe LocalContainerEntityManagerFactoryBean que permite irá gerenciar a factory do JPA-->
+    <bean class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" id="entityManagerFactory">
+        <property name="dataSource" ref="dataSource"/>
+        <property value="br.jus.jfpb.cadastro.model" name="packagesToScan"/>
+        <property name="jpaVendorAdapter">
+            <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"/>
+        </property>
+        <property name="jpaProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+
+            </props>
+        </property>
+    </bean>
+    <!-- Injeção do atributo 'datasource' da classe LocalContainerEntityManagerFactoryBean. O datasource é responsável pela conexão com o BD -->
+    <bean class="org.springframework.jdbc.datasource.DriverManagerDataSource" id="dataSource">
+        <property value="org.postgresql.Driver" name="driverClassName"/>
+        <property value="jdbc:postgresql://cejusc:5432/conc_cad" name="url"/>
+        <property value="postgres" name="username"/>
+        <property value="jfpb" name="password"/>
+    </bean>
+    <!-- Configura a classe responsável por efetuar o controlle transacional do JPA para LocalContainerEntityManagerFactoryBean -->
+    <bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
+        <property name="entityManagerFactory" ref="entityManagerFactory"/>
+    </bean>
+    <mvc:interceptors>
+        <bean class="br.jus.jfpb.cadastro.util.AutorizadorInterceptor" />
+    </mvc:interceptors>
+    <!-- habilita a configuracao das transacoes atraves da anotacao @Transactional -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+    <!-- tradutor de exceptions -->
+    <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" id="persistenceExceptionTranslationPostProcessor"/>
+</beans>
