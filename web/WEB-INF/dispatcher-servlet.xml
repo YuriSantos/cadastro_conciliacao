@@ -34,7 +34,7 @@
         <property value="org.postgresql.Driver" name="driverClassName"/>
         <property value="jdbc:postgresql://cejusc:5432/conc_cad" name="url"/>
         <property value="postgres" name="username"/>
-        <property value="jfpb" name="password"/>
+        <property value="" name="password"/>
     </bean>
     <!-- Configura a classe responsável por efetuar o controlle transacional do JPA para LocalContainerEntityManagerFactoryBean -->
     <bean class="org.springframework.orm.jpa.JpaTransactionManager" id="transactionManager">
